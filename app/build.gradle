@@ -2,7 +2,10 @@ apply plugin: 'com.android.application'
 
 def secretsPropertiesFile = rootProject.file("secrets.properties")
 def secretsProperties = new Properties()
-secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+if (secretsPropertiesFile.exists()) {
+    secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+}
+
 
 android {
     namespace 'com.hrst.temi_mqtt_client'
