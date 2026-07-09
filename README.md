@@ -24,7 +24,7 @@ MQTT_HOSTNAME="<mqtt-broker-hostname>"
 MQTT_USERNAME="<mqtt-broker-username>"
 MQTT_PASSWORD="<mqtt-broker-password>"
 ROBOT_NAME="<robot-name>"
-ROBOT_SERIAL="<robot-serial-number>
+ROBOT_SERIAL="<robot-serial-number>"
 ```
 
 
