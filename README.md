@@ -23,6 +23,7 @@ Add a ``secrets.properties`` file to the root folder with the following content:
 MQTT_HOSTNAME="<mqtt-broker-hostname>"
 MQTT_USERNAME="<mqtt-broker-username>"
 MQTT_PASSWORD="<mqtt-broker-password>"
+
 ```
 
 
