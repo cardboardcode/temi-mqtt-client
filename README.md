@@ -24,7 +24,8 @@ ROBOT_SERIAL="<robot-serial-number>"
 
 ```
 
-## **Run**
+## **Run** :rocket:
+
 1. Install the app
 2. Start the app
 3. Edit the hostname in the provided text-field, if needed
