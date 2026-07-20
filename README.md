@@ -26,10 +26,14 @@ ROBOT_SERIAL="<robot-serial-number>"
 
 ## **Run** :rocket:
 
-1. Install the app
-2. Start the app
-3. Edit the hostname in the provided text-field, if needed
-4. Tap on the `Connect` button
+1. **Install** the app.
+
+> [!NOTE]
+> Please follow the instructions from the official guide. [Click here](https://github.com/robotemi/sdk/wiki/Installing-and-Uninstalling-temi-Applications).
+
+2. **Start** the app.
+3. **Edit** the hostname in the provided text-field, if needed.
+4. **Tap** on the `Connect` button.
 
 
 ## **Topics**
