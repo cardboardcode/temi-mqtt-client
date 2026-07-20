@@ -1,5 +1,5 @@
-# **temi MQTT Client**
-An MQTT client for temi, which can be used for prototyping purposes.
+# **What Is This?**
+An Android app that runs an MQTT client for temi, which can be used for prototyping purposes.
 
 ## **Prerequisites**
 Set up an MQTT broker.
