@@ -1,17 +1,12 @@
 package com.hrst.temi_mqtt_client;
 
-import com.hrst.temi_mqtt_client.R;
-import com.hrst.temi_mqtt_client.BuildConfig;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
