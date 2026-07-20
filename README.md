@@ -29,7 +29,7 @@ ROBOT_SERIAL="<robot-serial-number>"
 1. **Install** the app.
 
 > [!NOTE]
-> Please follow the instructions from the official guide. [Click here](https://github.com/robotemi/sdk/wiki/Installing-and-Uninstalling-temi-Applications).
+> Follow the instructions from the official guide. [Click here](https://github.com/robotemi/sdk/wiki/Installing-and-Uninstalling-temi-Applications).
 
 2. **Start** the app.
 3. **Edit** the hostname in the provided text-field, if needed.
