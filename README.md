@@ -1,10 +1,10 @@
-# temi MQTT Client
+# **temi MQTT Client**
 An MQTT client for temi, which can be used for prototyping purposes.
 
 This app was designed to be used with [pytemi](https://github.com/hapi-robo/pytemi).
 
 
-## Prerequisites
+## **Prerequisites**
 You will need an MQTT broker.
 
 Some free, public MQTT brokers that you can use:
@@ -17,7 +17,7 @@ If you want to use a broker locally, one option is:
 Note that this app is hardcoded to use port 1883 -- it does not use SSL.
 
 
-## Setup
+## **Setup**
 Add a ``secrets.properties`` file to the root folder with the following content:
 ```
 MQTT_HOSTNAME="<mqtt-broker-hostname>"
@@ -28,15 +28,15 @@ ROBOT_SERIAL="<robot-serial-number>"
 ```
 
 
-## Usage
+## **Usage**
 - Install the app
 - Start the app
 - Edit the hostname in the provided text-field, if needed
 - Tap on the `Connect` button
 
 
-## Topics
-### Publish
+## **Topics**
+### **Publish**
 Search for `mMqttClient.publish` in MainActivity.java for all published messages. 
 
 In summary:
@@ -51,7 +51,7 @@ temi/{id}/event/waypoint/goto
 where `{id}` is the robot's serial number.
 
 
-### Subscribe
+### **Subscribe**
 Search for `mMqttClient.subscribe` and `parseMessage` in MainActivity.java for all subscribed messages. 
 
 In summary:
