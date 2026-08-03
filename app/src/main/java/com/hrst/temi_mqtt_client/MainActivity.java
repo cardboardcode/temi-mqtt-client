@@ -23,6 +23,9 @@ import android.widget.TextView;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import com.robotemi.sdk.BatteryData;
 import com.robotemi.sdk.Robot;
@@ -100,9 +103,13 @@ public class MainActivity extends AppCompatActivity implements
         @SuppressLint("LogNotTimber")
         @Override
         public void connectionLost(Throwable cause) {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+            String timestamp = sdf.format(new Date());
+
             // this method is called when connection to server is lost
             if (logsTextView != null) {
-                logsTextView.append("\n[MQTT] Connection Lost.");
+                logsTextView.append("\n[MQTT] [" + timestamp + "] Connection Lost!");
             }
             Log.i(TAG, "Connection Lost");
         }
@@ -153,8 +160,12 @@ public class MainActivity extends AppCompatActivity implements
         @SuppressLint("LogNotTimber")
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+            String timestamp = sdf.format(new Date());
+
             if (logsTextView != null) {
-                logsTextView.append("\n[MQTT] Connected.");
+                logsTextView.append("\n[MQTT] [" + timestamp + "] Connected...");
             }
             Log.i(TAG, "Successfully connected to MQTT broker");
             try {
@@ -172,8 +183,12 @@ public class MainActivity extends AppCompatActivity implements
         @SuppressLint("LogNotTimber")
         @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+            String timestamp = sdf.format(new Date());
+
             if (logsTextView != null) {
-                logsTextView.append("\n[MQTT] Failed to Connect.");
+                logsTextView.append("\n[MQTT] [" + timestamp + "] Failed to Connect.");
             }
             Log.i(TAG, "Failed to connect to MQTT broker");
         }
@@ -462,10 +477,13 @@ public class MainActivity extends AppCompatActivity implements
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(etHostname.getWindowToken(), 0);
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+        String timestamp = sdf.format(new Date());
+
         // initialize MQTT
         if (mMqttClient != null && mMqttClient.isConnected() && hostUri.equals(mMqttClient.getServerURI())) {
-            logsTextView.append("\n[MQTT] Disconnecting..");
-            Log.i(TAG, "Already connected to MQTT broker. Disconnecting..");
+            logsTextView.append("\n[MQTT] [" + timestamp + "] Disconnecting...");
+            Log.i(TAG, "Already connected to MQTT broker. Disconnecting...");
             mMqttClient.disconnect();
         }
         initMqtt(hostUri, "temi-" + sSerialNumber);
@@ -477,7 +495,12 @@ public class MainActivity extends AppCompatActivity implements
      * @param clientId Identifier used to uniquely identify this client
      */
     private void initMqtt(String hostUri, String clientId) throws MqttException {
-        logsTextView.append("\n[MQTT] Connecting..");
+
+        // Automatically gets the current device timezone
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+        String timestamp = sdf.format(new Date());
+
+        logsTextView.append("\n[MQTT] [" + timestamp + "] Connecting...");
         mMqttClient = new MqttAndroidClient(getApplicationContext(), hostUri, clientId, Ack.AUTO_ACK);
 
         mMqttClient.setCallback(new MqttCallbackHandler());
@@ -667,11 +690,15 @@ public class MainActivity extends AppCompatActivity implements
      */
     @SuppressLint("LogNotTimber")
     private static void parseMove(String command, JSONObject payload) throws JSONException {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+        String timestamp = sdf.format(new Date());
+
         switch (command) {
             case "joystick":
                 float x = Float.parseFloat(payload.getString("x"));
                 float y = Float.parseFloat(payload.getString("y"));
-                logsTextView.append("\n" + "[MQTT] Joystick (" + x + ", " + y + ")");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Joystick (" + x + ", " + y + ")");
                 sRobot.skidJoy(x, y);
                 break;
 
@@ -680,30 +707,30 @@ public class MainActivity extends AppCompatActivity implements
                 float pos_y = (float) payload.optDouble("y", 0.0);
                 float yaw = (float) payload.optDouble("yaw", 0.0);
                 int angle = payload.optInt("angle", 0);
-                logsTextView.append("\n" + "[MQTT] goToPosition (" + pos_x + ", " + pos_y + ", " + yaw + ", " + angle + ")");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] goToPosition (" + pos_x + ", " + pos_y + ", " + yaw + ", " + angle + ")");
                 sRobot.goToPosition(new Position(pos_x, pos_y, yaw, angle));
                 break;
 
             case "turn_by":
                 float turnAngle = Float.parseFloat(payload.getString("angle"));
-                logsTextView.append("\n" + "[MQTT] TurnBy ( " + turnAngle + " )");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] TurnBy ( " + turnAngle + " )");
                 sRobot.turnBy(Integer.parseInt(payload.getString("angle")), 1.0f);
                 break;
 
             case "tilt":
                 float tiltAngle = Float.parseFloat(payload.getString("angle"));
-                logsTextView.append("\n" + "[MQTT] Tilt ( " + tiltAngle + " )");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Tilt ( " + tiltAngle + " )");
                 sRobot.tiltAngle(Integer.parseInt(payload.getString("angle")));
                 break;
 
             case "tilt_by":
                 float tiltByAngle = Float.parseFloat(payload.getString("angle"));
-                logsTextView.append("\n" + "[MQTT] TiltBy ( " + tiltByAngle + " )");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] TiltBy ( " + tiltByAngle + " )");
                 sRobot.tiltBy(Integer.parseInt(payload.getString("angle")), 1.0f);
                 break;
 
             case "stop":
-                logsTextView.append("\n" + "[MQTT] Stop");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Stop");
                 sRobot.stopMovement();
                 break;
 
@@ -721,24 +748,28 @@ public class MainActivity extends AppCompatActivity implements
      */
     @SuppressLint("LogNotTimber")
     private static void parseMedia(String media, JSONObject payload) throws JSONException {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+        String timestamp = sdf.format(new Date());
+
         switch (media) {
             case "video":
-                logsTextView.append("\n" + "[MQTT] Play Video");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Play Video");
                 playVideo(sContext, payload.getString("url"));
                 break;
 
             case "webview":
-                logsTextView.append("\n" + "[MQTT] Show WebView");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Show WebView");
                 showWebview(sContext, payload.getString("url"));
                 break;
 
             case "join":
-                logsTextView.append("\n" + "[MQTT] Join Video Room - Jitsi Disabled");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Join Video Room - Jitsi Disabled");
                 // LaunchJitsi(sRobotName);
                 break;
 
             case "leave":
-                logsTextView.append("\n" + "[MQTT] Leave Video Room - Jitsi Disabled");
+                logsTextView.append("\n" + "[MQTT] [" + timestamp + "] Leave Video Room - Jitsi Disabled");
                 // hangUp();
                 break;
 
