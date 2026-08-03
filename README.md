@@ -11,12 +11,13 @@ Set up an MQTT broker.
 Add a ``secrets.properties`` file to the root folder with the following content:
 
 ```
-MQTT_HOSTNAME="<mqtt-broker-hostname>"
-MQTT_USERNAME="<mqtt-broker-username>"
-MQTT_PASSWORD="<mqtt-broker-password>"
-ROBOT_NAME="<robot-name>"
-ROBOT_SERIAL="<robot-serial-number>"
+MQTT_HOSTNAME="<INSERT BROKER IP ADDRESS HERE>"
+MQTT_USERNAME="<INSERT mqtt-user>"
+MQTT_PASSWORD="<INSERT mqtt-password>"
+ROBOT_NAME="<INSERT robot-name>" 
+ROBOT_SERIAL="<INSERT TEMI SERIAL NO>"
 ```
+`ROBOT_NAME` is non-critical for good for logging.
 
 ## **Build** :hammer:
 
