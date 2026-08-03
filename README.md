@@ -42,13 +42,12 @@ ROBOT_SERIAL="<INSERT TEMI SERIAL NO>"
 Search for `mMqttClient.publish` in MainActivity.java for all published messages. 
 
 In summary:
-```
+```bash
 temi/{id}/status/info
 temi/{id}/status/utils/battery
 temi/{id}/event/user/interaction
 temi/{id}/event/user/detection
 temi/{id}/event/waypoint/goto
-
 ```
 where `{id}` is the robot's serial number.
 
@@ -57,7 +56,7 @@ where `{id}` is the robot's serial number.
 Search for `mMqttClient.subscribe` and `parseMessage` in MainActivity.java for all subscribed messages. 
 
 In summary:
-```
+```bash
 temi/{id}/command/waypoint
 temi/{id}/command/move
 temi/{id}/command/tts
