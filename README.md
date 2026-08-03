@@ -17,7 +17,7 @@ MQTT_PASSWORD="<INSERT mqtt-password>"
 ROBOT_NAME="<INSERT robot-name>" 
 ROBOT_SERIAL="<INSERT TEMI SERIAL NO>"
 ```
-`ROBOT_NAME` is non-critical for good for logging.
+`ROBOT_NAME` is non-critical but good for logging.
 
 ## **Build** :hammer:
 
