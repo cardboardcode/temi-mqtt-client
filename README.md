@@ -21,9 +21,10 @@ ROBOT_SERIAL="<INSERT TEMI SERIAL NO>"
 
 ## **Build** :hammer:
 
-```bash
-
-```
+1. **Open** Android Studio (`Android Studio Quail 2 | 2026.1.2 Patch 1`)
+2. **Build** the project.
+3. **Connect** to Temi via `adb` remotely.
+4. **Run** the app on Temi.
 
 ## **Run** :rocket:
 
