@@ -44,6 +44,7 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -80,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private static URL serverURL;
 
+    private static volatile boolean mIsConnected = false;
+
     static {
         try {
             serverURL = new URL(BuildConfig.VIDEOROOM_URL);
@@ -99,7 +102,34 @@ public class MainActivity extends AppCompatActivity implements
     }
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiverHandler();
 
-    private static class MqttCallbackHandler implements MqttCallback {
+    private static class MqttCallbackHandler implements MqttCallbackExtended {
+
+        @Override  
+        public void connectComplete(boolean reconnect, String serverURI) {  
+            // fires on the very first successful connect AND every time  
+            // automatic reconnect succeeds afterwards  
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());  
+            String timestamp = sdf.format(new Date());  
+    
+            mIsConnected = true;  
+    
+            if (reconnect) {  
+                Log.i(TAG, "[MQTT] [" + timestamp + "] Reconnected to broker: " + serverURI);  
+                if (logsTextView != null) {  
+                    logsTextView.append("\n[MQTT] [" + timestamp + "] Reconnected to broker");  
+                }  
+            } else {  
+                Log.i(TAG, "[MQTT] [" + timestamp + "] Connected to broker: " + serverURI);  
+            }  
+    
+            try {  
+                // (re)subscribe to command topic every time a connection is (re)established  
+                mMqttClient.subscribe("temi/" + sSerialNumber + "/command/#", 0);  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+        }
+
         @SuppressLint("LogNotTimber")
         @Override
         public void connectionLost(Throwable cause) {
@@ -502,8 +532,51 @@ public class MainActivity extends AppCompatActivity implements
 
         logsTextView.append("\n[MQTT] [" + timestamp + "] Connecting...");
         mMqttClient = new MqttAndroidClient(getApplicationContext(), hostUri, clientId, Ack.AUTO_ACK);
-
         mMqttClient.setCallback(new MqttCallbackHandler());
+//        mMqttClient.setCallback(new MqttCallbackExtended() {
+//            @Override
+//            public void connectComplete(boolean reconnect, String serverURI) {
+//                // fires on the very first successful connect AND every time
+//                // automatic reconnect succeeds afterwards
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault());
+//                String timestamp = sdf.format(new Date());
+//
+//                mIsConnected = true;
+//
+//                if (reconnect) {
+//                    Log.i(TAG, "[MQTT] [" + timestamp + "] Reconnected to broker: " + serverURI);
+//                    if (logsTextView != null) {
+//                        logsTextView.append("\n[MQTT] [" + timestamp + "] Reconnected to broker");
+//                    }
+//                } else {
+//                    Log.i(TAG, "[MQTT] [" + timestamp + "] Connected to broker: " + serverURI);
+//                }
+//
+//                // (re)subscribe to command topic every time a connection is (re)established
+//                mMqttClient.subscribe("temi/" + sSerialNumber + "/command/#", 0);
+//            }
+//
+//            @Override
+//            public void connectionLost(Throwable cause) {
+//                // this method is called when connection to server is lost
+//                mIsConnected = false;
+//                Log.i(TAG, "Connection Lost");
+//            }
+//
+//            @Override
+//            public void deliveryComplete(IMqttDeliveryToken token) {
+//                // called when delivery for a message has been completed, and all acknowledgements have been received
+//            }
+//
+//            @Override
+//            public void messageArrived(String topic, MqttMessage message) throws JSONException {
+//                // this method is called when a message arrives from the server
+//                Log.i(TAG, topic);
+//                Log.i(TAG, message.toString());
+//                JSONObject payload = new JSONObject(message.toString());
+//                parseMessage(topic, payload);
+//            }
+//        });
 
         // options that control how the client connects to a server
         // https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html
