@@ -43,7 +43,6 @@ import info.mqtt.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -255,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements
         // initialize robot
         sRobot = Robot.getInstance();
         sRobot.addOnDetectionStateChangedListener(this);
+        sRobot.addOnGoToLocationStatusChangedListener(this);
 
 
         // initialize hostname
@@ -270,8 +270,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // add robot event listeners  
         sRobot.addOnRobotReadyListener(this);  
-        sRobot.addOnBatteryStatusChangedListener(this);  
-        sRobot.addOnGoToLocationStatusChangedListener(this);  
+        sRobot.addOnBatteryStatusChangedListener(this);
         sRobot.addOnUserInteractionChangedListener(this);  
         sRobot.addOnCurrentPositionChangedListener(this);
     }
@@ -293,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements
         // remove robot event listeners
         sRobot.removeOnRobotReadyListener(this);
         sRobot.removeOnBatteryStatusChangedListener(this);
-        sRobot.removeOnGoToLocationStatusChangedListener(this);
         sRobot.removeOnUserInteractionChangedListener(this);
     }
 
@@ -304,6 +302,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // remove robot event listeners  
         sRobot.removeDetectionStateChangedListener(this);
+        sRobot.removeOnGoToLocationStatusChangedListener(this);
 
         // disconnect MQTT client from broker
         if (mMqttClient != null && mMqttClient.isConnected()) {
