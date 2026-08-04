@@ -254,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements
 
         // initialize robot
         sRobot = Robot.getInstance();
+        sRobot.addOnDetectionStateChangedListener(this);
+
 
         // initialize hostname
         EditText etHostname = findViewById(R.id.et_hostname);
@@ -266,12 +268,11 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
 
-        // add robot event listeners
-        sRobot.addOnRobotReadyListener(this);
-        sRobot.addOnBatteryStatusChangedListener(this);
-        sRobot.addOnGoToLocationStatusChangedListener(this);
-        sRobot.addOnDetectionStateChangedListener(this);
-        sRobot.addOnUserInteractionChangedListener(this);
+        // add robot event listeners  
+        sRobot.addOnRobotReadyListener(this);  
+        sRobot.addOnBatteryStatusChangedListener(this);  
+        sRobot.addOnGoToLocationStatusChangedListener(this);  
+        sRobot.addOnUserInteractionChangedListener(this);  
         sRobot.addOnCurrentPositionChangedListener(this);
     }
 
@@ -293,7 +294,6 @@ public class MainActivity extends AppCompatActivity implements
         sRobot.removeOnRobotReadyListener(this);
         sRobot.removeOnBatteryStatusChangedListener(this);
         sRobot.removeOnGoToLocationStatusChangedListener(this);
-        sRobot.removeDetectionStateChangedListener(this);
         sRobot.removeOnUserInteractionChangedListener(this);
     }
 
@@ -301,6 +301,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // remove robot event listeners  
+        sRobot.removeDetectionStateChangedListener(this);
 
         // disconnect MQTT client from broker
         if (mMqttClient != null && mMqttClient.isConnected()) {
