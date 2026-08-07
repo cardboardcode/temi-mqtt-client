@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.ImageView;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -77,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements
     private static String sSerialNumber = BuildConfig.ROBOT_SERIAL;
     private static TextView logsTextView;
     private static ScrollView logsScrollView;
+    private ImageView idleImage;  
+    private View contentGroup;
 
     private static URL serverURL;
 
@@ -243,25 +246,51 @@ public class MainActivity extends AppCompatActivity implements
     // ACTIVITY LIFE CYCLE METHODS
     //----------------------------------------------------------------------------------------------
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        sContext = getApplicationContext();
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        sContext = getApplicationContext();  
         setContentView(R.layout.activity_main);
-        logsTextView = findViewById(R.id.logsTextView);
-        logsTextView.setTextColor(Color.WHITE);
-        logsScrollView = findViewById(R.id.logsScrollView);
 
-        // initialize robot
-        sRobot = Robot.getInstance();
-        sRobot.addOnDetectionStateChangedListener(this);
-        sRobot.addOnGoToLocationStatusChangedListener(this);
+        // hide ActionBar immediately so it doesn't show on first boot  
+        if (getSupportActionBar() != null) {  
+            getSupportActionBar().hide();  
+        } 
 
+        logsTextView = findViewById(R.id.logsTextView);  
+        logsTextView.setTextColor(Color.WHITE);  
+        logsScrollView = findViewById(R.id.logsScrollView);  
+    
+        // idle image / content group setup  
+        idleImage = findViewById(R.id.idleImage);  
+        contentGroup = findViewById(R.id.contentGroup);  
+        idleImage.setVisibility(View.VISIBLE);  
+        contentGroup.setVisibility(View.GONE);
 
-        // initialize hostname
-        EditText etHostname = findViewById(R.id.et_hostname);
-        etHostname.setText(BuildConfig.MQTT_HOSTNAME);
+        idleImage.setOnClickListener(v -> {  
+            idleImage.setVisibility(View.GONE);  
+            contentGroup.setVisibility(View.VISIBLE);
+            if (getSupportActionBar() != null) {  
+                getSupportActionBar().show();  
+            }
+        });
 
-        findViewById(R.id.button_connect).performClick();
+        contentGroup.setOnLongClickListener(v -> {  
+            contentGroup.setVisibility(View.GONE);  
+            idleImage.setVisibility(View.VISIBLE);
+            if (getSupportActionBar() != null) {  
+                getSupportActionBar().hide();  
+            } 
+            return true; // consume the long-press so it doesn't propagate further  
+        });
+    
+        // initialize robot  
+        sRobot = Robot.getInstance();  
+    
+        // initialize hostname  
+        EditText etHostname = findViewById(R.id.et_hostname);  
+        etHostname.setText(BuildConfig.MQTT_HOSTNAME);  
+    
+        findViewById(R.id.button_connect).performClick();  
     }
 
     @Override
@@ -469,6 +498,11 @@ public class MainActivity extends AppCompatActivity implements
      */
 //    @Override
     public void onUserInteraction(boolean isInteracting) {
+        runOnUiThread(() -> {  
+            findViewById(R.id.idleImage).setVisibility(isInteracting ? View.GONE : View.VISIBLE);  
+            findViewById(R.id.contentGroup).setVisibility(isInteracting ? View.VISIBLE : View.GONE);  
+        });
+
         JSONObject payload = new JSONObject();
 
         try {

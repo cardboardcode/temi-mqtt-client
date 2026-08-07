@@ -9,60 +9,76 @@
     android:focusableInTouchMode="true"
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/et_hostname"
-        android:layout_width="381dp"
-        android:layout_height="46dp"
-        android:background="#D3D3D3"
-        android:hint="Broker IP (e.g., 192.168.1.50)"
-        android:inputType="textUri"
-        android:padding="12dp"
-        android:textColor="#000000"
-        android:textColorHint="#555555"
-        tools:layout_editor_absoluteX="14dp"
-        tools:layout_editor_absoluteY="31dp" />
+    <ImageView  
+        android:id="@+id/idleImage"  
+        android:layout_width="match_parent"  
+        android:layout_height="match_parent"  
+        android:scaleType="centerCrop"  
+        android:src="@drawable/home_screen"  
+        android:visibility="visible" /> 
 
-    <ScrollView
-        android:id="@+id/logsScrollView"
-        android:layout_width="384dp"
-        android:layout_height="558dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_connect"
-        app:layout_constraintVertical_bias="1.0">
+    <androidx.constraintlayout.widget.ConstraintLayout  
+        android:id="@+id/contentGroup"  
+        android:layout_width="match_parent"  
+        android:layout_height="match_parent"  
+        android:visibility="gone">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <EditText
+            android:id="@+id/et_hostname"
+            android:layout_width="381dp"
+            android:layout_height="46dp"
+            android:background="#D3D3D3"
+            android:hint="Broker IP (e.g., 192.168.1.50)"
+            android:inputType="textUri"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#555555"
+            tools:layout_editor_absoluteX="14dp"
+            tools:layout_editor_absoluteY="31dp" />
 
-            <TextView
-                android:id="@+id/logsTextView"
+        <ScrollView
+            android:id="@+id/logsScrollView"
+            android:layout_width="384dp"
+            android:layout_height="558dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            app:layout_constraintVertical_bias="1.0">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="bottom"
-                android:text="[INFO] Logs appear here..." />
-        </LinearLayout>
-    </ScrollView>
+                android:orientation="vertical">
 
-    <Button
-        android:id="@+id/button_connect"
-        android:layout_width="200dp"
-        android:layout_height="55dp"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="88dp"
-        android:layout_marginEnd="160dp"
-        android:onClick="connectToMqtt"
-        android:text="@string/button_connect"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.504"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/logsTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="bottom"
+                    android:text="[INFO] Logs appear here..." />
+            </LinearLayout>
+        </ScrollView>
+
+        <Button
+            android:id="@+id/button_connect"
+            android:layout_width="200dp"
+            android:layout_height="55dp"
+            android:layout_marginStart="160dp"
+            android:layout_marginTop="88dp"
+            android:layout_marginEnd="160dp"
+            android:onClick="connectToMqtt"
+            android:text="@string/button_connect"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.504"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>  
 
 </androidx.constraintlayout.widget.ConstraintLayout>
