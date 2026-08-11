@@ -781,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements
                 float yaw = (float) payload.optDouble("yaw", 0.0);
                 int angle = payload.optInt("angle", 0);
                 logsTextView.append("\n" + "[MQTT] [" + timestamp + "] goToPosition (" + pos_x + ", " + pos_y + ", " + yaw + ", " + angle + ")");
-//                sRobot.goToPosition(new Position(pos_x, pos_y, yaw, angle));
+                sRobot.goToPosition(new Position(pos_x, pos_y, yaw, angle, true));
                 break;
 
             case "turn_by":
