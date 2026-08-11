@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import com.robotemi.sdk.BatteryData;
 import com.robotemi.sdk.Robot;
+import com.robotemi.sdk.constants.Mode;
 import com.robotemi.sdk.TtsRequest;
 import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener;
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener;
@@ -380,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
             
-            sRobot.hideTopBar(); // hides temi's top menu bar
+            sRobot.hideTopBar(true); // hides temi's top menu bar
             sRobot.toggleNavigationBillboard(true); // hides navigation billboard
             Log.i(TAG, "[ROBOT][READY]");
 
@@ -621,6 +622,9 @@ public class MainActivity extends AppCompatActivity implements
         BatteryData batteryData = sRobot.getBatteryData();
         payload.put("battery_percentage", batteryData != null ? batteryData.getBatteryPercentage() : 0);
 
+        Mode mode = sRobot.getMode();
+        payload.put("mode", mode != null ? mode.name() : "UNKNOWN");
+
         if (sCurrentPosition != null) {
             payload.put("x", sCurrentPosition.getX());
             payload.put("y", sCurrentPosition.getY());
@@ -777,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements
                 float yaw = (float) payload.optDouble("yaw", 0.0);
                 int angle = payload.optInt("angle", 0);
                 logsTextView.append("\n" + "[MQTT] [" + timestamp + "] goToPosition (" + pos_x + ", " + pos_y + ", " + yaw + ", " + angle + ")");
-                sRobot.goToPosition(new Position(pos_x, pos_y, yaw, angle));
+//                sRobot.goToPosition(new Position(pos_x, pos_y, yaw, angle));
                 break;
 
             case "turn_by":
