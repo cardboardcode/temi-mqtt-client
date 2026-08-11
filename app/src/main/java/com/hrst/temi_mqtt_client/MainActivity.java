@@ -78,8 +78,9 @@ public class MainActivity extends AppCompatActivity implements
     private static String sSerialNumber = BuildConfig.ROBOT_SERIAL;
     private static TextView logsTextView;
     private static ScrollView logsScrollView;
-    private ImageView idleImage;  
-    private View contentGroup;
+    private static ImageView idleImage;  
+    private static View contentGroup;
+
 
     private static URL serverURL;
 
@@ -696,7 +697,10 @@ public class MainActivity extends AppCompatActivity implements
                         parseMedia(topicTree[4], payload);
                     }
                     break;
-
+                case "face":  
+                    String faceName = payload.optString("raw", payload.optString("face")).trim();  
+                    parseFace(faceName);  
+                    break;
                 default:
                     Log.i(TAG, "Unknown category: " + category);
                     break;
@@ -842,6 +846,25 @@ public class MainActivity extends AppCompatActivity implements
                 Log.i(TAG, "[MOVE] Unknown Media");
                 break;
         }
+    }
+
+    @SuppressLint("LogNotTimber")  
+    private static void parseFace(String imageName) {  
+        if (imageName.isEmpty()) {  
+            Log.w(TAG, "[FACE] Empty image name");  
+            return;  
+        }  
+        int resId = sContext.getResources().getIdentifier(imageName, "drawable", sContext.getPackageName());  
+        if (resId == 0) {  
+            Log.w(TAG, "[FACE] No matching drawable found for: " + imageName);  
+            return;  
+        }  
+        sHandler.post(() -> {  
+            // idleImage/contentGroup are instance fields; would need static refs or an activity callback  
+            idleImage.setImageResource(resId);  
+            contentGroup.setVisibility(View.GONE);  
+            idleImage.setVisibility(View.VISIBLE);  
+        });  
     }
 
     //----------------------------------------------------------------------------------------------
