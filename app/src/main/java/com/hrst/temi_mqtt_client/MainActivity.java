@@ -705,6 +705,22 @@ public class MainActivity extends AppCompatActivity implements
                     String faceName = payload.optString("raw", payload.optString("face")).trim();  
                     parseFace(faceName);  
                     break;
+                case "mode":  
+                    int modeInt = payload.optInt("mode", payload.optInt("raw", -1));  
+                    if (modeInt != -1) {
+                        try {
+                            Mode resolved = Mode.values()[modeInt];
+                            Log.i(TAG, "[MODE] Resolved: " + resolved);
+                            logsTextView.append("\n" + "[MQTT] " + "[MODE] Setting mode:"  + modeInt);
+                            sRobot.setMode(Mode.GREET);
+                        } catch (Exception e) {
+                            Log.e(TAG, "[MODE] Failed to set mode", e);
+                        }
+//                        Log.i(TAG, "[MODE] Setting mode: " + modeInt);
+//
+//                        sRobot.setMode(Mode.values()[modeInt]); // or Mode.fromValue(modeInt), depending on SDK API
+                    }  
+                    break;
                 default:
                     Log.i(TAG, "Unknown category: " + category);
                     break;
