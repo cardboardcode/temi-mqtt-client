@@ -716,9 +716,6 @@ public class MainActivity extends AppCompatActivity implements
                         } catch (Exception e) {
                             Log.e(TAG, "[MODE] Failed to set mode", e);
                         }
-//                        Log.i(TAG, "[MODE] Setting mode: " + modeInt);
-//
-//                        sRobot.setMode(Mode.values()[modeInt]); // or Mode.fromValue(modeInt), depending on SDK API
                     }  
                     break;
                 default:
