@@ -39,6 +39,8 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.listeners.OnUserInteractionChangedListener;
 import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener;
 import com.robotemi.sdk.navigation.model.Position;
+import com.robotemi.sdk.permission.Permission;
+import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
 
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
@@ -67,10 +69,12 @@ public class MainActivity extends AppCompatActivity implements
         OnGoToLocationStatusChangedListener,
         OnCurrentPositionChangedListener,
         OnDetectionStateChangedListener,
-        OnUserInteractionChangedListener {
+        OnUserInteractionChangedListener,
+        OnRequestPermissionResultListener {
     private static final String TAG = "MAIN";
     public static final String VIDEO_URL = "com.hrst.media.VIDEO_URL";
     public static final String WEBVIEW_URL = "com.hrst.media.WEBVIEW_URL";
+    private static final int REQUEST_CODE_SETTINGS = 1001;
 
     private static final Handler sHandler = new Handler(Looper.getMainLooper());
     private static Robot sRobot;
@@ -81,6 +85,21 @@ public class MainActivity extends AppCompatActivity implements
     private static ScrollView logsScrollView;
     private static ImageView idleImage;  
     private static View contentGroup;
+
+    @Override
+    public void onRequestPermissionResult(@NotNull Permission permission, int grantResult, int requestCode) {
+        // REMOVED THE SUPER CALL
+        if (requestCode == REQUEST_CODE_SETTINGS) {
+            if (grantResult == Permission.GRANTED) {
+                Log.i(TAG, "Settings permission granted. Changing mode to GREET.");
+                if (sRobot != null) {
+                    sRobot.setMode(Mode.GREET);
+                }
+            } else {
+                Log.e(TAG, "Settings permission denied by system.");
+            }
+        }
+    }
 
 
     private static URL serverURL;
@@ -705,18 +724,30 @@ public class MainActivity extends AppCompatActivity implements
                     String faceName = payload.optString("raw", payload.optString("face")).trim();  
                     parseFace(faceName);  
                     break;
-                case "mode":  
-                    int modeInt = payload.optInt("mode", payload.optInt("raw", -1));  
+                case "mode":
+                    int modeInt = payload.optInt("mode", payload.optInt("raw", -1));
                     if (modeInt != -1) {
                         try {
                             Mode resolved = Mode.values()[modeInt];
                             Log.i(TAG, "[MODE] Resolved: " + resolved);
-                            logsTextView.append("\n" + "[MQTT] " + "[MODE] Setting mode:"  + modeInt);
-                            sRobot.setMode(Mode.GREET);
+                            logsTextView.append("\n" + "[MQTT] " + "[MODE] Setting mode:" + modeInt);
+
+                            if (sRobot.checkSelfPermission(Permission.SETTINGS) == Permission.GRANTED) {
+                                sRobot.setMode(Mode.GREET);
+                            } else {
+                                Log.i(TAG, "[MODE] Requesting settings permission via SDK...");
+
+                                // Construct a List as required by Temi SDK's requestPermissions method
+                                java.util.List<Permission> permissionsList = new java.util.ArrayList<>();
+                                permissionsList.add(Permission.SETTINGS);
+
+                                // Call the correct SDK method: requestPermissions
+                                sRobot.requestPermissions(permissionsList, REQUEST_CODE_SETTINGS);
+                            }
                         } catch (Exception e) {
                             Log.e(TAG, "[MODE] Failed to set mode", e);
                         }
-                    }  
+                    }
                     break;
                 default:
                     Log.i(TAG, "Unknown category: " + category);
@@ -955,6 +986,20 @@ public class MainActivity extends AppCompatActivity implements
     // Example for sending actions to JitsiMeetSDK
     private void hangUp() {
         // Jitsi Disabled
+    }
+
+    private void changeToGreetMode() {
+        // 1. Verify if permission is already granted via the sRobot instance
+        if (sRobot.checkSelfPermission(Permission.SETTINGS) == Permission.GRANTED) {
+            sRobot.setMode(Mode.GREET);
+        } else {
+            // 2. Request permission directly through the instance
+            // Note: Pass a List of permissions instead of a single object if your SDK version requires it
+            java.util.List<Permission> permissions = new java.util.ArrayList<>();
+            permissions.add(Permission.SETTINGS);
+
+            sRobot.requestPermissions(permissions, REQUEST_CODE_SETTINGS);
+        }
     }
 
     @SuppressLint("LogNotTimber")
