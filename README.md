@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/cardboardcode/temi-mqtt-client)
+
 # **What Is This?**
 An Android app that runs an MQTT client for temi, which can be used for prototyping purposes.
 
