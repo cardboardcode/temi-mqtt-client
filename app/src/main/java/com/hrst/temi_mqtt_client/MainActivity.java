@@ -39,6 +39,11 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.listeners.OnUserInteractionChangedListener;
 import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener;
 import com.robotemi.sdk.navigation.model.Position;
+import com.robotemi.sdk.map.MapDataModel;
+import com.robotemi.sdk.map.Layer;
+import com.robotemi.sdk.map.LayerPose;
+import com.robotemi.sdk.permission.Permission;
+import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
 
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
@@ -60,6 +65,8 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
+import java.util.Collections;
+import androidx.annotation.NonNull;
 
 public class MainActivity extends AppCompatActivity implements
         OnRobotReadyListener,
@@ -67,10 +74,12 @@ public class MainActivity extends AppCompatActivity implements
         OnGoToLocationStatusChangedListener,
         OnCurrentPositionChangedListener,
         OnDetectionStateChangedListener,
-        OnUserInteractionChangedListener {
+        OnUserInteractionChangedListener,
+        OnRequestPermissionResultListener {
     private static final String TAG = "MAIN";
     public static final String VIDEO_URL = "com.hrst.media.VIDEO_URL";
     public static final String WEBVIEW_URL = "com.hrst.media.WEBVIEW_URL";
+    private static final int REQUEST_CODE = 1001;
 
     private static final Handler sHandler = new Handler(Looper.getMainLooper());
     private static Robot sRobot;
@@ -304,6 +313,7 @@ public class MainActivity extends AppCompatActivity implements
         sRobot.addOnBatteryStatusChangedListener(this);
         sRobot.addOnUserInteractionChangedListener(this);  
         sRobot.addOnCurrentPositionChangedListener(this);
+        sRobot.addOnRequestPermissionResultListener(this);
     }
 
     @Override
@@ -324,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements
         sRobot.removeOnRobotReadyListener(this);
         sRobot.removeOnBatteryStatusChangedListener(this);
         sRobot.removeOnUserInteractionChangedListener(this);
+        sRobot.removeOnRequestPermissionResultListener(this);
     }
 
     @SuppressLint("LogNotTimber")
@@ -354,6 +365,9 @@ public class MainActivity extends AppCompatActivity implements
 //    @Override
     public void onRobotReady(boolean isReady) {
         if (isReady) {
+
+            checkMapPermission();
+
             String oldSerial = sSerialNumber;
             // Use serial from BuildConfig if provided, otherwise use robot's actual serial
             if (BuildConfig.ROBOT_SERIAL != null && !BuildConfig.ROBOT_SERIAL.trim().isEmpty()) {
@@ -650,6 +664,60 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**  
+     * Publish x, y, yaw for every waypoint on Temi's current map, once.  
+     * @throws JSONException Exception is thrown when it fails to publish  
+     */  
+    public static void robotPublishAllWaypointCoordinates() throws JSONException {  
+        JSONArray waypointArray = new JSONArray();  
+    
+        // Check if map permission is granted
+        if (sRobot.checkSelfPermission(Permission.MAP) == Permission.GRANTED) {
+            MapDataModel mapDataModel = sRobot.getMapData();
+        } else {
+            // Request permission if not granted
+            Log.w(TAG, "No permission given for Permission.MAP");
+            sRobot.requestPermissions(Collections.singletonList(Permission.MAP), REQUEST_CODE);
+        }
+
+        MapDataModel mapDataModel = sRobot.getMapData();  
+        if (mapDataModel == null) {  
+            Log.w(TAG, "[WAYPOINT] getMapData() returned null");  
+            return;  
+        }  
+    
+        for (Layer layer : mapDataModel.getLocations()) {  
+            String name = layer.getLayerId();  
+            List<LayerPose> poses = layer.getLayerPoses();  
+            if (poses == null) continue;  
+    
+            for (LayerPose pose : poses) {  
+                Log.i(TAG, "[WAYPOINT] '" + name + "': x=" + pose.getX()  
+                        + ", y=" + pose.getY() + ", yaw=" + pose.getTheta());  
+    
+                JSONObject waypointObj = new JSONObject();  
+                waypointObj.put("name", name);  
+                waypointObj.put("x", pose.getX());  
+                waypointObj.put("y", pose.getY());  
+                waypointObj.put("yaw", pose.getTheta());  
+                waypointArray.put(waypointObj);  
+            }  
+        }  
+    
+        JSONObject payload = new JSONObject();  
+        payload.put("waypoints", waypointArray);  
+    
+        try {  
+            MqttMessage message = new MqttMessage(payload.toString().getBytes(StandardCharsets.UTF_8));  
+            if (mMqttClient != null && mMqttClient.isConnected()) {  
+                mMqttClient.publish("temi/" + sSerialNumber + "/event/waypoint/all_coordinates", message);  
+                logsScrollView.scrollTo(0, logsScrollView.getBottom());  
+            }  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+    }
+
     //----------------------------------------------------------------------------------------------
     // MQTT MESSAGE PARSER
     //----------------------------------------------------------------------------------------------
@@ -763,6 +831,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 }
                 Log.w(TAG, "[WAYPOINT] Location not found: " + locationName + ". Available: " + locations);
+                break;
+
+            case "all_coordinates":  
+                Log.i(TAG, "[WAYPOINT] Publishing all waypoint coordinates for current map");
+                logsTextView.append("\n" + "[MQTT] TRIGGERED!!! ");
+                robotPublishAllWaypointCoordinates();  
                 break;
 
             default:
@@ -995,6 +1069,31 @@ public class MainActivity extends AppCompatActivity implements
         } catch (Exception e) {
             Log.i("Error onCurrentPositionChanged","Error to publish mqtt message in onCurrentPositionChanged");
             e.printStackTrace();
+        }
+    }
+
+    private void checkMapPermission() {
+        if (sRobot.checkSelfPermission(Permission.MAP) == Permission.GRANTED) {
+            MapDataModel mapDataModel = sRobot.getMapData();
+            Log.i(TAG, "Map loaded successfully!");
+        } else {
+            Log.w(TAG, "No permission given for Permission.MAP. Requesting...");
+            sRobot.requestPermissions(Collections.singletonList(Permission.MAP), REQUEST_CODE);
+        }
+    }
+
+    // Ensure the name is exactly onRequestPermissionResult and the types are correct
+    @Override
+    public void onRequestPermissionResult(Permission permission, int isGranted, int requestCode) {
+        // Note: The Temi SDK provides 'isGranted' as an int (0 for GRANTED, 1 for DENIED)
+        if (requestCode == REQUEST_CODE && permission == Permission.MAP) {
+            if (isGranted == Permission.GRANTED) {
+                Log.i(TAG, "Permission.MAP granted dynamically!");
+                MapDataModel mapDataModel = sRobot.getMapData();
+                // Your map processing code goes here
+            } else {
+                Log.e(TAG, "Permission.MAP was denied by the system/user.");
+            }
         }
     }
 }
