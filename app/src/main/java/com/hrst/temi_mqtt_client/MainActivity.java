@@ -30,6 +30,8 @@ import java.util.Locale;
 
 import com.robotemi.sdk.BatteryData;
 import com.robotemi.sdk.Robot;
+import com.robotemi.sdk.map.Floor;
+import com.robotemi.sdk.map.Location;
 import com.robotemi.sdk.constants.Mode;
 import com.robotemi.sdk.TtsRequest;
 import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener;
@@ -39,6 +41,8 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.listeners.OnUserInteractionChangedListener;
 import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener;
 import com.robotemi.sdk.navigation.model.Position;
+import com.robotemi.sdk.permission.Permission;  
+import com.robotemi.sdk.permission.OnRequestPermissionResultListener; 
 
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
@@ -650,6 +654,71 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Publish x, y, yaw for every waypoint on Temi's current floor, once.
+     * @throws JSONException Exception is thrown when it fails to publish
+     */
+    public static void robotPublishAllWaypointCoordinates() throws JSONException {
+        JSONArray waypointArray = new JSONArray();
+
+        // Ensure multi-floor support is enabled before requesting the full floor list.  
+        if (!sRobot.isMultiFloorEnabled()) {  
+            Log.w(TAG, "[WAYPOINT] Multi-floor is disabled. Attempting to enable it.");  
+            sRobot.setMultiFloorEnabled(true);  
+    
+            if (!sRobot.isMultiFloorEnabled()) {  
+                Log.w(TAG, "[WAYPOINT] Failed to enable multi-floor. Proceeding with getAllFloors() anyway.");  
+            } else {  
+                Log.i(TAG, "[WAYPOINT] Multi-floor successfully enabled.");  
+            }  
+        }
+
+        // ...and cross-check it against the full floor list.  
+        List<Floor> floorList = sRobot.getAllFloors();  
+    
+        if (floorList != null) {  
+            Log.i(TAG, "[WAYPOINT] getAllFloors() returned " + floorList.size() + " floor(s):");  
+            for (Floor floor : floorList) {  
+                Log.i(TAG, "[WAYPOINT]   Floor -> id=" + floor.getId()  
+                        + ", name=" + floor.getName()  
+                        + ", mapId=" + floor.getMapId());  
+            }  
+        } else {  
+            Log.w(TAG, "[WAYPOINT] getAllFloors() returned null");  
+        } 
+
+        // Robot API directly returns the current floor - no need to scan getAllFloors()
+        // and no Floor.isCurrentFloor() accessor exists.
+        Floor currentFloor = sRobot.getCurrentFloor();
+
+        if (currentFloor == null) {
+            Log.w(TAG, "[WAYPOINT] Could not resolve current floor");
+            return;
+        }
+
+        for (Location location : currentFloor.getLocations()) {
+            JSONObject waypointObj = new JSONObject();
+            waypointObj.put("name", location.getName());
+            waypointObj.put("x", location.getX());
+            waypointObj.put("y", location.getY());
+            waypointObj.put("yaw", location.getYaw());
+            waypointArray.put(waypointObj);
+        }
+
+        JSONObject payload = new JSONObject();
+        payload.put("waypoints", waypointArray);
+
+        try {
+            MqttMessage message = new MqttMessage(payload.toString().getBytes(StandardCharsets.UTF_8));
+            if (mMqttClient != null && mMqttClient.isConnected()) {
+                mMqttClient.publish("temi/" + sSerialNumber + "/event/waypoint/all_coordinates", message);
+                logsScrollView.scrollTo(0, logsScrollView.getBottom());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //----------------------------------------------------------------------------------------------
     // MQTT MESSAGE PARSER
     //----------------------------------------------------------------------------------------------
@@ -716,9 +785,6 @@ public class MainActivity extends AppCompatActivity implements
                         } catch (Exception e) {
                             Log.e(TAG, "[MODE] Failed to set mode", e);
                         }
-//                        Log.i(TAG, "[MODE] Setting mode: " + modeInt);
-//
-//                        sRobot.setMode(Mode.values()[modeInt]); // or Mode.fromValue(modeInt), depending on SDK API
                     }  
                     break;
                 default:
@@ -763,6 +829,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 }
                 Log.w(TAG, "[WAYPOINT] Location not found: " + locationName + ". Available: " + locations);
+                break;
+
+            case "all_coordinates":  
+                Log.i(TAG, "[WAYPOINT] Publishing all waypoint coordinates for current floor");
+                logsTextView.append("\n" + "[MQTT] Received all_coordinates TRIGGER!!!");
+                robotPublishAllWaypointCoordinates();  
                 break;
 
             default:
