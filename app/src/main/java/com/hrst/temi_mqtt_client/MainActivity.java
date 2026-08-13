@@ -724,6 +724,21 @@ public class MainActivity extends AppCompatActivity implements
                     String faceName = payload.optString("raw", payload.optString("face")).trim();  
                     parseFace(faceName);  
                     break;
+                case "localize":
+                    logsTextView.append("\n" + "[MQTT] " + "Localisation request received...");
+                    if (payload.has("x") && payload.has("y")) {
+                        float x = (float) payload.optDouble("x", 0.0);
+                        float y = (float) payload.optDouble("y", 0.0);
+                        float yaw = (float) payload.optDouble("yaw", 0.0);
+                        int tiltAngle = payload.optInt("tilt_angle", 0);
+                        Boolean isInMapArea = payload.has("is_in_map_area")
+                                ? payload.optBoolean("is_in_map_area")
+                                : null;
+                        sRobot.repose(new Position(x, y, yaw, tiltAngle, isInMapArea));
+                    } else {
+                        sRobot.repose();
+                    }
+                    break;
                 case "mode":
                     int modeInt = payload.optInt("mode", payload.optInt("raw", -1));
                     if (modeInt != -1) {
